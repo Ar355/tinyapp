@@ -12,7 +12,7 @@ const generateRandomString = function() {
   return Math.random().toString(36).substring(2,8);
 };
 
-app.get("/", (req, res) => {
+app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
@@ -44,17 +44,27 @@ app.get("/u/:shortURL", (req, res) => {
 
 
 app.post("/urls", (req, res) => {
-  
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
 });
-
+//deleting the urls
 app.post("/urls/:shortURL/delete", (req, res) => {
   
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
+//updating url
+app.post("/urls/:shortURL", (req, res) => {
+  // const shortURL = generateRandomString();
+  const shortURL = req.params.shortURL;
+  urlDatabase[shortURL] = req.body.newURL;
+  res.redirect(`/urls/${shortURL}`);
+});
+
+//link
+app.get("")
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
