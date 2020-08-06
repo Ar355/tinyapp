@@ -37,7 +37,7 @@ const urlsForUser = function(user) {
   const userUrlDatabase = {};
   for (const url in urlDatabase) {
     if (urlDatabase[url].userId === user) {
-      userUrlDatabase[url] = {longURL: urlDatabase[url].longURL};
+      userUrlDatabase[url] = {longURL: urlDatabase[url].longURL, userId: urlDatabase[url].userId};
     }
   }
   
@@ -96,13 +96,23 @@ app.get("/urls/new", (req, res) => {
  
  
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
-    user: users[req.cookies.user_id]
-  };
+  const user = req.cookies.user_id;
+  const urlDataUser = urlsForUser(user);
  
-  res.render("urls_show", templateVars);
+  if (!user) {
+    res.redirect("/login");
+  } else if (urlDataUser[req.params.shortURL] === undefined) {
+    res.send("you don't own this URL please longin");
+  } else {
+    let templateVars = {
+      shortURL: req.params.shortURL,
+      longURL: urlDataUser[req.params.shortURL].longURL,
+      user: user
+    };
+   
+    res.render("urls_show", templateVars);
+  }
+
  
 });
  
@@ -127,21 +137,35 @@ app.get("/register", (req, res) => {
  
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = {longURL: req.body.longURL, userId: req.cookies.user_id};
   res.redirect(`/urls/${shortURL}`);
 });
  
  
 //deleting the urls
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
+  const user = req.cookies.user_id;
+  const urlDataUser = urlsForUser(user);
+ 
+  if (!user) {
+    res.redirect("/login");
+  } else if (urlDataUser[req.params.shortURL] === undefined) {
+    res.send("You don't own this url")
+  } else {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls");
+  }
+  
+  
+ 
 });
  
 //updating url
 app.post("/urls/:shortURL", (req, res) => {
+  console.log(" 11111", req.params.shortURL);
+  console.log("prnt222", req.body.newURL);
   const shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = req.body.newURL;
+  urlDatabase[shortURL] = {longURL: req.body.newURL, userId: req.cookies.user_id};
   res.redirect(`/urls/${shortURL}`);
 });
  
