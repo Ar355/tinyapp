@@ -3,16 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>signin</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+  <title>register</title>
 </head>
 <body>
+  <head>
+    <%- include('partials/_header') %>
+  </head>
   <form class="form-signin" method="POST" action="/register">
-    <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-  <label for="inputEmail" class="sr-only">Email address</label>
-  <input type="email" id="inputEmail" name="email" class="form-control" placeholder="Email address">
-  <label for="inputPassword" class="sr-only">Password</label>
-  <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password">
-  <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+    <h1 class="h3 mb-3 font-weight-normal">Create an Account</h1>
+    <input class="form-control" type="text" name="email" placeholder="Email" style="width: 200px; margin: 1em">
+    <input class="form-control" type="text" name="password" placeholder="Password" style="width: 200px; margin: 1em">
+    <button type="submit" class="btn btn-primary">register</button>
 
 </form>
 </body>

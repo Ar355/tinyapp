@@ -29,18 +29,16 @@ const users = {
     password: "dishwasher-funk"
   }
 };
-
-const authenticatorEmailLookUp = function(submEmail) {
+//checking if the email is already in the database
+const EmailLookUp = function(submEmail) {
   for (let user in users) {
-    console.log("print !!!!!user", users[user]["email"]);
     if (submEmail === users[user]["email"]) {
-
-      return true;
+      const userData = users[user];
+      return userData;
     }
   }
 };
 
-console.log("pritn UserObj ",users);
 
 app.get("/urls", (req, res) => {
 
@@ -82,14 +80,23 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-app.get("/register", (req, res) => {
-
-  res.render("register");
-});
-
 app.get("/login", (req, res) => {
-  res.render("login");
+  let templateVars = {
+    
+    user: null
+  };
+  res.render("login", templateVars);
 });
+
+app.get("/register", (req, res) => {
+  let templateVars = {
+    
+    user: null
+  };
+  res.render("register", templateVars);
+});
+
+
 
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
@@ -110,8 +117,22 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("user_id", req.body.username);
-  res.redirect("/urls");
+  
+  const userEmail = req.body.email;
+  const user = EmailLookUp(userEmail);
+  //checking if email excist
+  if (user) {
+    //comparing passwords
+    if (req.body.password === user.password) {
+      res.cookie("user_id", user.id);
+      res.redirect("/urls");
+    } else {
+      res.status(403).send("Email and password did not match");
+    }
+
+  } else {
+    res.status(400).send("User not found");
+  }
 });
 
 app.post("/logout", (req, res) => {
@@ -120,22 +141,19 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-
-  const userId = generateRandomString();
   
-  //check Errors
+  const userId = generateRandomString();
+  //check if email or password empty => Error
   if (req.body.email === "" || req.body.password === '') {
     res.status(400).send("Please fill Email and password");
   }
-  
+  //check if email already in the database => Error
   const userEmail = req.body.email;
-
-  console.log("pritn func", authenticatorEmailLookUp(userEmail));
-
-  if (authenticatorEmailLookUp(userEmail)) {
+  const user = EmailLookUp(userEmail);
+  if (user) {
     res.status(409).send("The email adress already registerd");
   }
-
+  //create a new user
   users[userId] = {
     id: userId,
     email: req.body.email,
