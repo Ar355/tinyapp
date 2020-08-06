@@ -50,8 +50,15 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = {user: users[req.cookies.user_id]};
-  res.render("urls_new", templateVars);
+  const user = req.body;
+  //check if user not logged
+  if (Object.keys(user).length === 0) {
+    res.redirect("/login");
+  } else {
+    let templateVars = {user: users[req.cookies.user_id]};
+    res.render("urls_new", templateVars);
+  }
+  
 });
 
 app.get("/urls.json", (req, res) => {
