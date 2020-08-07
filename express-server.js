@@ -2,13 +2,19 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 
-const {emailLookUp} = require("./helpers");
+const {emailLookUp} = require('./helpers');
+const {urlsForUser} = require("./helpers");
+const {generateRandomString} = require("./helpers");
 
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
+
+
 const saltRounds = 10;
 const salt = bcrypt.genSaltSync(saltRounds);
 const cookieSession = require('cookie-session');
+
+
 app.use(cookieSession({
   name: 'session',
   keys: ["thisKeyIsSupperSecure", "poShkruajShqipePseJo"],
@@ -17,28 +23,10 @@ app.use(cookieSession({
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 
- 
-////////////////Functions///////////////
- 
-//random string
-const generateRandomString = function() {
-  return Math.random().toString(36).substring(2,8);
-};
- 
-//checking if the email is already in the database
+
 
  
 
-const urlsForUser = function(user) {
-  const userUrlDatabase = {};
-  for (const url in urlDatabase) {
-    if (urlDatabase[url].userId === user) {
-      userUrlDatabase[url] = {longURL: urlDatabase[url].longURL, userId: urlDatabase[url].userId};
-    }
-  }
-  
-  return userUrlDatabase;
-};
  
 ///////////Users Database //////////////
 const users = {
@@ -60,21 +48,22 @@ let urlDatabase = {
 };
  
  
- 
- 
+
+
+////////////////////////  GET ////////////////////////
 app.get("/urls", (req, res) => {
   const user = req.session.user_id;
+  console.log(urlDatabase);
   //check if user not logged
   if (!user) {
     res.redirect("/login");
   } else {
     let templateVars = {
-      urls: urlsForUser(user),
+      urls: urlsForUser(user, urlDatabase),
       user: users[req.session.user_id]
     };
     res.render("urls_index", templateVars);
   }
-   
 });
  
  
@@ -92,7 +81,7 @@ app.get("/urls/new", (req, res) => {
  
 app.get("/urls/:shortURL", (req, res) => {
   const user = req.session.user_id;
-  const urlDataUser = urlsForUser(user);
+  const urlDataUser = urlsForUser(user, urlDatabase);
  
   if (!user) {
     res.redirect("/login");
@@ -107,8 +96,6 @@ app.get("/urls/:shortURL", (req, res) => {
    
     res.render("urls_show", templateVars);
   }
-
- 
 });
  
  
@@ -117,6 +104,7 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
  
+
 app.get("/login", (req, res) => {
   let templateVars = {user: users[req.session.user_id]};
   res.render("login", templateVars);
@@ -128,7 +116,8 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
  
- 
+
+////////////////////////  POST ////////////////////////
  
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
@@ -136,11 +125,11 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
  
- 
+
 //deleting the urls
 app.post("/urls/:shortURL/delete", (req, res) => {
   const user = req.session.user_id;
-  const urlDataUser = urlsForUser(user);
+  const urlDataUser = urlsForUser(user, urlDatabase);
  
   if (!user) {
     res.redirect("/login");
@@ -150,11 +139,10 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     delete urlDatabase[req.params.shortURL];
     res.redirect("/urls");
   }
-  
-  
  
 });
  
+
 //updating url
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
@@ -165,7 +153,10 @@ app.post("/urls/:shortURL", (req, res) => {
 //login
 app.post("/login", (req, res) => {
   const submEmail = req.body.email;
+  console.log(submEmail);
+  console.log(users);
   const user = emailLookUp(submEmail, users);
+
   //checking if email excist
   if (user) {
     //comparing passwords
