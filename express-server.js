@@ -72,7 +72,6 @@ app.get("/urls", (req, res) => {
       urls: urlsForUser(user),
       user: users[req.session.user_id]
     };
-    console.log(templateVars);
     res.render("urls_index", templateVars);
   }
    
@@ -158,8 +157,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
  
 //updating url
 app.post("/urls/:shortURL", (req, res) => {
-  console.log(" 11111", req.params.shortURL);
-  console.log("prnt222", req.body.newURL);
   const shortURL = req.params.shortURL;
   urlDatabase[shortURL] = {longURL: req.body.newURL, userId: req.session.user_id};
   res.redirect(`/urls/${shortURL}`);
