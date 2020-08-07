@@ -2,7 +2,12 @@
 
 TinyApp is a full stack web application built with Node and Express that allows users to shorten long URLs (à la bit.ly).
 
+## Final Product
 
+!["Screenshot of login page"](https://github.com/Ar355/tinyapp/blob/master/docs/login.png)
+!["Screenshot of URL page"](https://github.com/Ar355/tinyapp/blob/master/docs/myUrl.png)
+!["Screenshot of newUrl page"](https://github.com/Ar355/tinyapp/blob/master/docs/newUrl.png)
+!["Screenshot of register page"](https://github.com/Ar355/tinyapp/blob/master/docs/register.png)
 ## Dependencies
 
 - Node.js
