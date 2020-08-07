@@ -3,6 +3,11 @@ const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+const salt = bcrypt.genSaltSync(saltRounds);
+// const password = "purple-monkey-dinosaur"; // found in the req.params object
+// const hashedPassword = bcrypt.hashSync(password, 10);
  
  
 app.set("view engine", "ejs");
@@ -49,12 +54,12 @@ const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: bcrypt.hashSync("purple-monkey-dinosaur", salt)
   },
   "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dishwasher-funk", salt)
   }
 };
 ///////////URL Database //////////////
@@ -176,7 +181,7 @@ app.post("/login", (req, res) => {
   //checking if email excist
   if (user) {
     //comparing passwords
-    if (req.body.password === user.password) {
+    if (bcrypt.compareSync(req.body.password, user.password)) {
       res.cookie("user_id", user.id);
       res.redirect("/urls");
     } else {
@@ -210,7 +215,8 @@ app.post("/register", (req, res) => {
   users[userId] = {
     id: userId,
     email: req.body.email,
-    password: req.body.password
+    
+    password: bcrypt.hashSync(req.body.password, salt)
   };
   
   res.cookie("user_id", users[userId]["id"]);
