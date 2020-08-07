@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 
+const {emailLookUp} = require("./helpers");
+
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -24,21 +26,8 @@ const generateRandomString = function() {
 };
  
 //checking if the email is already in the database
-const EmailLookUp = function(submEmail) {
-  for (let user in users) {
-    if (submEmail === users[user]["email"]) {
-      const userData = users[user];
-      return userData;
-    }
-  }
-};
+
  
-//Checking if loged
-// const userNotLog = function(user) {
-//   if (Object.keys(user).length === 0) {
-//     return false;
-//   }
-// };
 
 const urlsForUser = function(user) {
   const userUrlDatabase = {};
@@ -178,8 +167,8 @@ app.post("/urls/:shortURL", (req, res) => {
  
 //login
 app.post("/login", (req, res) => {
-  const userEmail = req.body.email;
-  const user = EmailLookUp(userEmail);
+  const submEmail = req.body.email;
+  const user = emailLookUp(submEmail, users);
   //checking if email excist
   if (user) {
     //comparing passwords
@@ -208,8 +197,8 @@ app.post("/register", (req, res) => {
     res.status(400).send("Please fill Email and password");
   }
   //check if email already in the database => Error
-  const userEmail = req.body.email;
-  const user = EmailLookUp(userEmail);
+  const submEmail = req.body.email;
+  const user = emailLookUp(submEmail, users);
   if (user) {
     res.status(409).send("The email adress already registerd");
   }
