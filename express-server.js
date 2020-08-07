@@ -1,18 +1,20 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
-const cookieParser = require("cookie-parser");
+const PORT = 8080;
+
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const salt = bcrypt.genSaltSync(saltRounds);
-// const password = "purple-monkey-dinosaur"; // found in the req.params object
-// const hashedPassword = bcrypt.hashSync(password, 10);
- 
- 
+const cookieSession = require('cookie-session');
+app.use(cookieSession({
+  name: 'session',
+  keys: ["thisKeyIsSupperSecure", "poShkruajShqipePseJo"],
+}));
+
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+
  
 ////////////////Functions///////////////
  
@@ -72,14 +74,14 @@ let urlDatabase = {
  
  
 app.get("/urls", (req, res) => {
-  const user = req.cookies.user_id;
+  const user = req.session.user_id;
   //check if user not logged
   if (!user) {
     res.redirect("/login");
   } else {
     let templateVars = {
       urls: urlsForUser(user),
-      user: users[req.cookies.user_id]
+      user: users[req.session.user_id]
     };
     console.log(templateVars);
     res.render("urls_index", templateVars);
@@ -89,19 +91,19 @@ app.get("/urls", (req, res) => {
  
  
 app.get("/urls/new", (req, res) => {
-  const user = req.cookies.user_id;
+  const user = req.session.user_id;
   //check if user not logged
   if (!user) {
     res.redirect("/login");
   } else {
-    let templateVars = {user: users[req.cookies.user_id]};
+    let templateVars = {user: users[req.session.user_id]};
     res.render("urls_new", templateVars);
   }
 });
  
  
 app.get("/urls/:shortURL", (req, res) => {
-  const user = req.cookies.user_id;
+  const user = req.session.user_id;
   const urlDataUser = urlsForUser(user);
  
   if (!user) {
@@ -128,13 +130,13 @@ app.get("/u/:shortURL", (req, res) => {
 });
  
 app.get("/login", (req, res) => {
-  let templateVars = {user: users[req.cookies.user_id]};
+  let templateVars = {user: users[req.session.user_id]};
   res.render("login", templateVars);
 });
  
  
 app.get("/register", (req, res) => {
-  let templateVars = {user: users[req.cookies.user_id]};
+  let templateVars = {user: users[req.session.user_id]};
   res.render("register", templateVars);
 });
  
@@ -142,14 +144,14 @@ app.get("/register", (req, res) => {
  
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = {longURL: req.body.longURL, userId: req.cookies.user_id};
+  urlDatabase[shortURL] = {longURL: req.body.longURL, userId: req.session.user_id};
   res.redirect(`/urls/${shortURL}`);
 });
  
  
 //deleting the urls
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const user = req.cookies.user_id;
+  const user = req.session.user_id;
   const urlDataUser = urlsForUser(user);
  
   if (!user) {
@@ -170,7 +172,7 @@ app.post("/urls/:shortURL", (req, res) => {
   console.log(" 11111", req.params.shortURL);
   console.log("prnt222", req.body.newURL);
   const shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = {longURL: req.body.newURL, userId: req.cookies.user_id};
+  urlDatabase[shortURL] = {longURL: req.body.newURL, userId: req.session.user_id};
   res.redirect(`/urls/${shortURL}`);
 });
  
@@ -182,7 +184,7 @@ app.post("/login", (req, res) => {
   if (user) {
     //comparing passwords
     if (bcrypt.compareSync(req.body.password, user.password)) {
-      res.cookie("user_id", user.id);
+      req.session.user_id = user.id;
       res.redirect("/urls");
     } else {
       res.status(403).send("Email and password did not match");
@@ -194,7 +196,7 @@ app.post("/login", (req, res) => {
  
 //logout
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  delete req.session.user_id;
   res.redirect("/urls");
 });
  
@@ -218,8 +220,7 @@ app.post("/register", (req, res) => {
     
     password: bcrypt.hashSync(req.body.password, salt)
   };
-  
-  res.cookie("user_id", users[userId]["id"]);
+  req.session.user_id = users[userId]["id"];
   res.redirect("/urls");
 });
   
