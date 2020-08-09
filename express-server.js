@@ -3,8 +3,8 @@ const app = express();
 const PORT = 8080;
 
 const {emailLookUp} = require('./helpers');
-const {urlsForUser} = require("./helpers");
-const {generateRandomString} = require("./helpers");
+const {urlsForUser} = require('./helpers');
+const {generateRandomString} = require('./helpers');
 
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
@@ -41,6 +41,8 @@ const users = {
     password: bcrypt.hashSync("dishwasher-funk", salt)
   }
 };
+
+
 ///////////URL Database //////////////
 let urlDatabase = {
   "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userId:"userRandomID"},
@@ -48,14 +50,12 @@ let urlDatabase = {
 };
  
  
-
-
 ////////////////////////  GET ////////////////////////
 app.get("/urls", (req, res) => {
   const user = req.session.user_id;
-  console.log(urlDatabase);
   //check if user not logged
   if (!user) {
+    console.log("user not loged");
     res.redirect("/login");
   } else {
     let templateVars = {
@@ -93,14 +93,17 @@ app.get("/urls/:shortURL", (req, res) => {
       longURL: urlDataUser[req.params.shortURL].longURL,
       user: user
     };
-   
     res.render("urls_show", templateVars);
   }
 });
  
  
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
+  const user = req.session.user_id;
+  const urlDataUser = urlsForUser(user, urlDatabase);
+  console.log("?????", req.params);
+  console.log("!!!!!!", urlDataUser[req.params]);
+  const longURL = urlDataUser[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
  
@@ -134,12 +137,11 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   if (!user) {
     res.redirect("/login");
   } else if (urlDataUser[req.params.shortURL] === undefined) {
-    res.send("You don't own this url")
+    res.send("You don't own this url");
   } else {
     delete urlDatabase[req.params.shortURL];
     res.redirect("/urls");
   }
- 
 });
  
 
@@ -153,8 +155,7 @@ app.post("/urls/:shortURL", (req, res) => {
 //login
 app.post("/login", (req, res) => {
   const submEmail = req.body.email;
-  console.log(submEmail);
-  console.log(users);
+
   const user = emailLookUp(submEmail, users);
 
   //checking if email excist
@@ -184,6 +185,16 @@ app.post("/register", (req, res) => {
   if (req.body.email === "" || req.body.password === '') {
     res.status(400).send("Please fill Email and password");
   }
+  //check if email is ok but password empty
+  if (req.body.password === '') {
+    users[userId] = {
+      id: userId,
+      email: req.body.email,
+      password: bcrypt.hashSync(req.body.password, salt)
+    };
+    console.log("printDatabase", users);
+    res.status(400).send("Please fill Email and password");
+  }
   //check if email already in the database => Error
   const submEmail = req.body.email;
   const user = emailLookUp(submEmail, users);
@@ -194,7 +205,6 @@ app.post("/register", (req, res) => {
   users[userId] = {
     id: userId,
     email: req.body.email,
-    
     password: bcrypt.hashSync(req.body.password, salt)
   };
   req.session.user_id = users[userId]["id"];
