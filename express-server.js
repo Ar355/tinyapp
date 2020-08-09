@@ -99,11 +99,7 @@ app.get("/urls/:shortURL", (req, res) => {
  
  
 app.get("/u/:shortURL", (req, res) => {
-  const user = req.session.user_id;
-  const urlDataUser = urlsForUser(user, urlDatabase);
-  console.log("?????", req.params);
-  console.log("!!!!!!", urlDataUser[req.params]);
-  const longURL = urlDataUser[req.params.shortURL].longURL;
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
  
@@ -147,9 +143,18 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 //updating url
 app.post("/urls/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = {longURL: req.body.newURL, userId: req.session.user_id};
-  res.redirect(`/urls/${shortURL}`);
+  const user = req.session.user_id;
+  const urlDataUser = urlsForUser(user, urlDatabase);
+ 
+  if (!user) {
+    res.redirect("/login");
+  } else if (urlDataUser[req.params.shortURL] === undefined) {
+    res.send("you don't own this URL please longin");
+  } else {
+    const shortURL = req.params.shortURL;
+    urlDatabase[shortURL] = {longURL: req.body.newURL, userId: req.session.user_id};
+    res.redirect(`/urls/${shortURL}`);
+  }
 });
  
 //login
