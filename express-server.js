@@ -82,11 +82,25 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const user = req.session.user_id;
   const urlDataUser = urlsForUser(user, urlDatabase);
- 
+  const shortURL = req.params.shortURL;
+  let count = 0;
   if (!user) {
     res.redirect("/login");
+    ///check if short urlExist
+  } else {
+    for (let url in urlDatabase) {
+      console.log("print this");
+      if (shortURL === urlDatabase[url]) {
+        count ++;
+      }
+    }
+    console.log("pritnCount ", count);
+  }
+
+  if (count === 0) {
+    return res.send("This short url doesn't exist");
   } else if (urlDataUser[req.params.shortURL] === undefined) {
-    res.send("you don't own this URL please longin");
+    res.send("You don't own this URL please longin");
   } else {
     let templateVars = {
       shortURL: req.params.shortURL,
