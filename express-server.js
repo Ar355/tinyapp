@@ -183,18 +183,21 @@ app.post("/register", (req, res) => {
   const userId = generateRandomString();
   //check if email or password empty => Error
   if (req.body.email === "" || req.body.password === '') {
-    res.status(400).send("Please fill Email and password");
+    console.log("email empyt/pasword empty");
+    
+    return res.status(400).send("Please fill Email and password");
   }
+  console.log("print userData", users);
   //check if email is ok but password empty
-  if (req.body.password === '') {
-    users[userId] = {
-      id: userId,
-      email: req.body.email,
-      password: bcrypt.hashSync(req.body.password, salt)
-    };
-    console.log("printDatabase", users);
-    res.status(400).send("Please fill Email and password");
-  }
+  // if (req.body.password === '') {
+  //   users[userId] = {
+  //     id: userId,
+  //     email: req.body.email,
+  //     password: bcrypt.hashSync(req.body.password, salt)
+  //   };
+  //   console.log("printDatabase", users)
+  //   res.status(400).send("Please fill Email and password");
+  // }
   //check if email already in the database => Error
   const submEmail = req.body.email;
   const user = emailLookUp(submEmail, users);
