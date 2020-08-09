@@ -56,7 +56,7 @@ app.get("/urls", (req, res) => {
   //check if user not logged
   if (!user) {
     console.log("user not loged");
-    res.redirect("/login");
+    res.redirect("/pleaseLogIn");
   } else {
     let templateVars = {
       urls: urlsForUser(user, urlDatabase),
@@ -71,7 +71,7 @@ app.get("/urls/new", (req, res) => {
   const user = req.session.user_id;
   //check if user not logged
   if (!user) {
-    res.redirect("/login");
+    res.redirect("/pleaseLogIn");
   } else {
     let templateVars = {user: users[req.session.user_id]};
     res.render("urls_new", templateVars);
@@ -85,7 +85,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   let count = 0;
   if (!user) {
-    res.redirect("/login");
+    res.redirect("/pleaseLogIn");
     ///check if short urlExist
   } else {
     for (let url in urlDatabase) {
@@ -117,6 +117,9 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
  
+app.get("/pleaseLogIn", (req, res) => {
+  res.render("pleaseLogIn");
+});
 
 app.get("/login", (req, res) => {
   let templateVars = {user: users[req.session.user_id]};
@@ -145,7 +148,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const urlDataUser = urlsForUser(user, urlDatabase);
  
   if (!user) {
-    res.redirect("/login");
+    res.redirect("/pleaseLogIn");
   } else if (urlDataUser[req.params.shortURL] === undefined) {
     res.send("You don't own this url");
   } else {
@@ -161,7 +164,7 @@ app.post("/urls/:shortURL", (req, res) => {
   const urlDataUser = urlsForUser(user, urlDatabase);
  
   if (!user) {
-    res.redirect("/login");
+    res.redirect("/pleaseLogIn");
   } else if (urlDataUser[req.params.shortURL] === undefined) {
     res.send("you don't own this URL please longin");
   } else {
