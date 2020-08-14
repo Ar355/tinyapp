@@ -51,12 +51,29 @@ let urlDatabase = {
  
  
 ////////////////////////  GET ////////////////////////
+
+app.get("/", (req, res) => {
+  const user = req.session.user_id;
+  //check if user not logged
+  if (!user) {
+    
+    res.redirect("/login");
+  } else {
+    let templateVars = {
+      urls: urlsForUser(user, urlDatabase),
+      user: users[req.session.user_id]
+    };
+    res.render("urls_index", templateVars);
+  }
+});
+ 
+
 app.get("/urls", (req, res) => {
   const user = req.session.user_id;
   //check if user not logged
   if (!user) {
     
-    res.redirect("/pleaseLogIn");
+    res.redirect("/login");
   } else {
     let templateVars = {
       urls: urlsForUser(user, urlDatabase),
